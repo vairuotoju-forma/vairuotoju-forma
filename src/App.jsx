@@ -1,80 +1,133 @@
-import { useState } from 'react'
-
-const driverList = [
-  "Gytis Romaško",
-  "Edvardas Čiupailo",
-  "Erikas Michnevič",
-  "Robert Subotkevič",
-  "Artūras Petrikas",
-  "Aleksandr Makutunovič"
-]
+import React, { useState } from "react";
 
 export default function App() {
-  const [driver, setDriver] = useState("")
-  const [mileage, setMileage] = useState("")
-  const [oilLevel, setOilLevel] = useState("3")
-  const [comments, setComments] = useState("")
-  const [photo, setPhoto] = useState(null)
-  const [submitting, setSubmitting] = useState(false)
-  const today = new Date().toISOString().split("T")[0]
+  const [formData, setFormData] = useState({
+    driver: "",
+    date: new Date().toISOString().slice(0, 10),
+    mileage: "",
+    oilLevel: "",
+    comments: "",
+    carNumber: "",
+    photo: null,
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files ? files[0] : value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSubmitting(true)
-
-    const formData = new FormData()
-    formData.append("driver", driver)
-    formData.append("date", today)
-    formData.append("mileage", mileage)
-    formData.append("oilLevel", oilLevel)
-    formData.append("comments", comments)
-    if (photo) formData.append("photo", photo)
+    e.preventDefault();
+    setLoading(true);
+    const data = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) data.append(key, value);
+    });
 
     try {
-      await fetch("https://script.google.com/macros/s/AKfycbyt_T8pEXjkPDIK61t0MnRG4Tq4F00QcOUvD9mWEvY/exec", {
-        method: "POST",
-        body: formData
-      })
-      alert("Duomenys išsiųsti!")
-      setDriver("")
-      setMileage("")
-      setOilLevel("3")
-      setComments("")
-      setPhoto(null)
-    } catch {
-      alert("Klaida siunčiant duomenis.")
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbw9C-ZiRxK2PMQ54f13vTMyCqGklv4-SX.../exec",
+        {
+          method: "POST",
+          body: data,
+        }
+      );
+      if (!response.ok) throw new Error("Tinklo klaida");
+      alert("Duomenys išsiųsti!");
+    } catch (err) {
+      alert("Klaida siunčiant duomenis.");
     } finally {
-      setSubmitting(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 400, margin: "auto", padding: 20 }}>
-      <h2>Vairuotojo forma</h2>
-      <label>Vairuotojas:</label>
-      <select value={driver} onChange={(e) => setDriver(e.target.value)} required>
-        <option value="">Pasirinkti...</option>
-        {driverList.map((d) => (
-          <option key={d} value={d}>{d}</option>
-        ))}
-      </select>
-      <br />
-      <label>Data:</label>
-      <input type="text" value={today} readOnly />
-      <br />
-      <label>Rida pradžioje:</label>
-      <input type="number" value={mileage} onChange={(e) => setMileage(e.target.value)} required />
-      <br />
-      <label>Tepalų lygis (1–5):</label>
-      <input type="number" min="1" max="5" value={oilLevel} onChange={(e) => setOilLevel(e.target.value)} required />
-      <br />
-      <label>Komentarai / nesklandumai:</label>
-      <textarea value={comments} onChange={(e) => setComments(e.target.value)} />
-      <br />
-      <label>Nuotrauka (nebūtina):</label>
-      <input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files[0])} />
-      <br />
-      <button type="submit" disabled={submitting}>{submitting ? "Siunčiama..." : "Pateikti"}</button>
-    </form>
-  )
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+      <img src="/tradiala-logo.png" alt="Tradiala" className="mb-4 w-32" />
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md space-y-4"
+      >
+        <div>
+          <label className="block font-medium">Vairuotojas:</label>
+          <input
+            name="driver"
+            value={formData.driver}
+            onChange={handleChange}
+            required
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Data:</label>
+          <input
+            name="date"
+            type="date"
+            value={formData.date}
+            onChange={handleChange}
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Mašinos numeris:</label>
+          <input
+            name="carNumber"
+            value={formData.carNumber}
+            onChange={handleChange}
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Rida pradžioje:</label>
+          <input
+            name="mileage"
+            value={formData.mileage}
+            onChange={handleChange}
+            required
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Tepalų lygis (1–5):</label>
+          <input
+            name="oilLevel"
+            value={formData.oilLevel}
+            onChange={handleChange}
+            required
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Komentarai / nesklandumai:</label>
+          <textarea
+            name="comments"
+            value={formData.comments}
+            onChange={handleChange}
+            className="w-full border rounded p-2"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Nuotrauka (nebūtina):</label>
+          <input
+            name="photo"
+            type="file"
+            onChange={handleChange}
+            accept="image/*"
+            className="w-full"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700 transition"
+        >
+          {loading ? "Siunčiama..." : "Siųsti"}
+        </button>
+      </form>
+    </div>
+  );
 }
