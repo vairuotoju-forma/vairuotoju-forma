@@ -31,7 +31,7 @@ export default function App() {
     if (photo) formData.append("photo", photo)
 
     try {
-      await fetch("https://script.google.com/macros/s/AKfycbyt_T8pEXjkPDIK61t0MnRG4Tq4F00QcOUvD9mWEvY/dev", {
+      await fetch("https://script.google.com/macros/s/AKfycbyt_T8pEXjkPDIK61t0MnRG4Tq4F00QcOUvD9mWEvY/exec", {
         method: "POST",
         body: formData
       })
